@@ -25,7 +25,13 @@ var triangleVertexPositionBuffer = null;
 var triangleVertexNormalBuffer = null;
 
 var initSizes = [0.12, 0.027, 0.04, 0.045, 0.031, 0.07, 0.067, 0.04, 0.03];
+var scaleSizes = [0.4, 0.0014, 0.0035, 0.0037, 0.0019, 0.04, 0.033, 0.015, 0.014];
 
+var init_tx = [0.0, 0.17, 0.25, 0.35, 0.44, 0.57, 0.74, 0.87, 0.96]
+var scale_tx = [0.0, 0.43, 0.46, 0.50, 0.60, 0.74, 0.85, 0.92, 0.96]
+var scale = 0;
+var compare_scale = 0;
+var side=0;
 // The GLOBAL transformation parameters
 
 var globalAngleYY = 0.0;
@@ -33,6 +39,7 @@ var globalAngleXX = 0.0;
 var globalAngleZZ1 = [0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0];
 
 var globalTz = 0.0;
+var cubeVertexTextureCoordBuffer;
 
 var initVertices = [sceneModels[0].vertices.slice(), sceneModels[1].vertices.slice(), sceneModels[2].vertices.slice(),
 sceneModels[3].vertices.slice(), sceneModels[4].vertices.slice(), sceneModels[5].vertices.slice(),
@@ -46,7 +53,7 @@ sceneModels[6].normals.slice(), sceneModels[7].normals.slice(), sceneModels[8].n
 //   initVertices.push(sceneModels[i].vertices.slice());
 //   initNormals.push(sceneModels[i].normals.slice());
 // }
-
+var asteroid = 0;
 // GLOBAL Animation controls
 
 var globalRotationYY_ON = 0;
@@ -116,6 +123,33 @@ function countFrames() {
 // The WebGL code
 //
 
+//Textures
+function handleLoadedTexture(texture) {
+
+	gl.bindTexture(gl.TEXTURE_2D, texture);
+	gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
+	gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, texture.image);
+	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+	gl.bindTexture(gl.TEXTURE_2D, null);
+}
+
+
+var webGLTexture;
+
+function initTexture() {
+
+	webGLTexture = gl.createTexture();
+	webGLTexture.image = new Image();
+	webGLTexture.image.onload = function () {
+		handleLoadedTexture(webGLTexture)
+	}
+
+	webGLTexture.image.src = "meteor.jpg";
+}
+
+//END OF Textures
+
 //----------------------------------------------------------------------------
 //
 //  Rendering
@@ -127,45 +161,58 @@ function initBuffers( model ) {
 
 	// Vertex Coordinates
 
-	triangleVertexPositionBuffer = gl.createBuffer();
-	gl.bindBuffer(gl.ARRAY_BUFFER, triangleVertexPositionBuffer);
-	gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(model.vertices), gl.STATIC_DRAW);
-	triangleVertexPositionBuffer.itemSize = 3;
-	triangleVertexPositionBuffer.numItems =  model.vertices.length / 3;
 
-	// Associating to the vertex shader
 
-	gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute,
-			triangleVertexPositionBuffer.itemSize,
-			gl.FLOAT, false, 0, 0);
+  if(asteroid){
+    cubeVertexPositionBuffer = gl.createBuffer();
+  	gl.bindBuffer(gl.ARRAY_BUFFER, cubeVertexPositionBuffer);
+  	gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(model.vertices), gl.STATIC_DRAW);
+  	cubeVertexPositionBuffer.itemSize = 3;
+  	cubeVertexPositionBuffer.numItems = model.vertices.length / 3;
 
-	// Vertex Normal Vectors
+  	// Textures
 
-	triangleVertexNormalBuffer = gl.createBuffer();
-	gl.bindBuffer(gl.ARRAY_BUFFER, triangleVertexNormalBuffer);
-	gl.bufferData(gl.ARRAY_BUFFER, new Float32Array( model.normals), gl.STATIC_DRAW);
-	triangleVertexNormalBuffer.itemSize = 3;
-	triangleVertexNormalBuffer.numItems = model.normals.length / 3;
+    cubeVertexTextureCoordBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, cubeVertexTextureCoordBuffer);
+     	gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(model.textureCoords), gl.STATIC_DRAW);
+    cubeVertexTextureCoordBuffer.itemSize = 2;
+    cubeVertexTextureCoordBuffer.numItems = 24;
 
-	// Associating to the vertex shader
+  	// Vertex indices
 
-	gl.vertexAttribPointer(shaderProgram.vertexNormalAttribute,
-			triangleVertexNormalBuffer.itemSize,
-			gl.FLOAT, false, 0, 0);
+    cubeVertexIndexBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, cubeVertexIndexBuffer);
+    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(model.cubeVertexIndices), gl.STATIC_DRAW);
+    cubeVertexIndexBuffer.itemSize = 1;
+    cubeVertexIndexBuffer.numItems = 216;
+  }
+  else{
+    triangleVertexPositionBuffer = gl.createBuffer();
+  	gl.bindBuffer(gl.ARRAY_BUFFER, triangleVertexPositionBuffer);
+  	gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(model.vertices), gl.STATIC_DRAW);
+  	triangleVertexPositionBuffer.itemSize = 3;
+  	triangleVertexPositionBuffer.numItems =  model.vertices.length / 3;
 
-  // Vertex Color Vectors
+  	// Associating to the vertex shader
 
-  // triangleVertexColorBuffer = gl.createBuffer();
-  // gl.bindBuffer(gl.ARRAY_BUFFER, triangleVertexColorBuffer);
-  // gl.bufferData(gl.ARRAY_BUFFER, new Float32Array( model.colors), gl.STATIC_DRAW);
-  // triangleVertexColorBuffer.itemSize = 3;
-	// triangleVertexColorBuffer.numItems = model.colors.length / 3;
-  //
-  // // Associating to the vertex shader
-  //
-  // gl.vertexAttribPointer(shaderProgram.vertexNormalAttribute,
-  //   	triangleVertexNormalBuffer.itemSize,
-  //   	gl.FLOAT, false, 0, 0);
+  	gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute,
+  			triangleVertexPositionBuffer.itemSize,
+  			gl.FLOAT, false, 0, 0);
+
+  	// Vertex Normal Vectors
+
+  	triangleVertexNormalBuffer = gl.createBuffer();
+  	gl.bindBuffer(gl.ARRAY_BUFFER, triangleVertexNormalBuffer);
+  	gl.bufferData(gl.ARRAY_BUFFER, new Float32Array( model.normals), gl.STATIC_DRAW);
+  	triangleVertexNormalBuffer.itemSize = 3;
+  	triangleVertexNormalBuffer.numItems = model.normals.length / 3;
+
+  	// Associating to the vertex shader
+
+  	gl.vertexAttribPointer(shaderProgram.vertexNormalAttribute,
+  			triangleVertexNormalBuffer.itemSize,
+  			gl.FLOAT, false, 0, 0);
+  }
 }
 
 //----------------------------------------------------------------------------
@@ -205,6 +252,7 @@ function drawModel( model,
 	// Vertex Coordinates and Vertex Normal Vectors
 
 	initBuffers(model);
+
 
 	// Material properties
 
@@ -264,6 +312,26 @@ function drawModel( model,
 		gl.drawArrays(primitiveType, 0, triangleVertexPositionBuffer.numItems);
 
 	}
+
+  // NEW --- Textures
+  if(asteroid){
+    gl.bindBuffer(gl.ARRAY_BUFFER, cubeVertexTextureCoordBuffer);
+      gl.vertexAttribPointer(shaderProgram.textureCoordAttribute, cubeVertexTextureCoordBuffer.itemSize, gl.FLOAT, false, 0, 0);
+
+      gl.activeTexture(gl.TEXTURE0);
+      gl.bindTexture(gl.TEXTURE_2D, webGLTexture);
+
+      gl.uniform1i(shaderProgram.samplerUniform, 0);
+
+      // The vertex indices
+
+      gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, cubeVertexIndexBuffer);
+
+  	// Drawing the triangles --- NEW --- DRAWING ELEMENTS
+
+  	gl.drawElements(gl.TRIANGLES, cubeVertexIndexBuffer.numItems, gl.UNSIGNED_SHORT, 0);
+  }
+
 }
 
 //----------------------------------------------------------------------------
@@ -387,10 +455,17 @@ function drawScene() {
 
      var lsmUniform = gl.getUniformLocation(shaderProgram, "allLights["+ String(0) + "].lightSourceMatrix");
      gl.uniformMatrix4fv(lsmUniform, false, new Float32Array(flatten(lightSourceMatrix)));
+    if(!asteroid){
+      drawModel( sceneModels[i],
+  			       mvMatrix,
+  	           primitiveType );
+    }
+    else{
+      drawModel( asteroidModels,
+  			       mvMatrix,
+  	           primitiveType );
+    }
 
-		drawModel( sceneModels[i],
-			   mvMatrix,
-	           primitiveType );
 
 
   }
@@ -459,7 +534,7 @@ function animate() {
         if(angle!=0){
           numb[i]=angle;
         }
-      	sceneModels[i].setRotAngleZZ( angle );
+      	sceneModels[i].setRotAngleZZ( numb[i] );
       }
       else{
         sceneModels[i].setRotAngleZZ( numb[i] );
@@ -519,25 +594,47 @@ function outputInfos(){
 var currentlyPressedKeys = {};
 function handleKeys() {
 
-	if (currentlyPressedKeys[38]) {
+	if (currentlyPressedKeys[40]) {
 		// Arrow Up
 
     for(var i = 0; i < sceneModels.length; i++) {
       sceneModels[i].sx *= 0.97;
-
+      sceneModels[i].tx *= 0.97;
       sceneModels[i].sz = sceneModels[i].sy = sceneModels[i].sx;
     }
 	}
-	if (currentlyPressedKeys[40]) {
+	if (currentlyPressedKeys[38]) {
 
 		// Arrow Down
 
     for(var i = 0; i < sceneModels.length; i++) {
       sceneModels[i].sx *= 1.03;
-
+      sceneModels[i].tx *= 1.03;
       sceneModels[i].sz = sceneModels[i].sy = sceneModels[i].sx;
     }
 	}
+  if(side && globalRotationZZ_ON == 0){
+    if (currentlyPressedKeys[39]) {
+  		// Arrow Up
+      if(sceneModels[8].tx > -0.9){
+        for(var i = 0; i < sceneModels.length; i++) {
+
+            sceneModels[i].tx -= 0.02;
+        }
+      }
+  	}
+
+    if (currentlyPressedKeys[37]) {
+  		// Arrow Up
+      if(sceneModels[0].tx < 0.9){
+        for(var i = 0; i < sceneModels.length; i++) {
+
+          sceneModels[i].tx += 0.02;
+        }
+      }
+  	}
+  }
+
 }
 
 //----------------------------------------------------------------------------
@@ -627,7 +724,8 @@ function setEventListeners(){
 		// For every model
     if (globalRotationZZ_ON) {
       globalRotationZZ_ON = 0;
-      for(var i = 1; i < sceneModels.length; i++ )
+      document.getElementById("stop-translation").innerHTML = "ON";
+      for(var i = 0; i < sceneModels.length; i++ )
   	    {
   			sceneModels[i].lightZZOn = false;
 
@@ -636,6 +734,7 @@ function setEventListeners(){
     }
     else {
       globalRotationZZ_ON = 1;
+      document.getElementById("stop-translation").innerHTML = "OFF";
       for(var i = 1; i < sceneModels.length; i++ )
   	    {
   			sceneModels[i].lightZZOn = true;
@@ -675,14 +774,113 @@ function setEventListeners(){
 		}
 	};
 
+  document.getElementById("make-scale").onclick = function(){
+    if (!scale) {
+      document.getElementById("make-scale").innerHTML = "OFF";
+      for(var i = 0; i < sceneModels.length; i++ )
+  	  {
+  			sceneModels[i].sz = scaleSizes[i];
+        sceneModels[i].sy = scaleSizes[i];
+        sceneModels[i].sx = scaleSizes[i];
+        sceneModels[i].tx = scale_tx[i];
+        //globalRotationZZ_ON = 0;
+  		}
+      scale = 1;
+    } else {
+        document.getElementById("make-scale").innerHTML = "ON";
+        for(var i = 0; i < sceneModels.length; i++ )
+    	  {
+          sceneModels[i].sz = initSizes[i];
+          sceneModels[i].sy = initSizes[i];
+          sceneModels[i].sx = initSizes[i];
+          sceneModels[i].tx = init_tx[i];
+          //globalRotationZZ_ON = 1;
+    		}
+        scale = 0;
+    }
+
+	};
+
+  document.getElementById("compare-scale").onclick = function(){
+    side = 1;
+    if (!compare_scale) {
+      document.getElementById("stop-translation").setAttribute("disabled", "disabled");
+      document.getElementById("slower-translation").setAttribute("disabled", "disabled");
+      document.getElementById("faster-translation").setAttribute("disabled", "disabled");
+      document.getElementById("make-scale").setAttribute("disabled", "disabled");
+      document.getElementById("reset").setAttribute("disabled", "disabled");
+      document.getElementById("compare-scale").innerHTML = "OFF";
+      for(var i = 0; i < sceneModels.length; i++ )
+  	  {
+  			sceneModels[i].sz = scaleSizes[i];
+        sceneModels[i].sy = scaleSizes[i];
+        sceneModels[i].sx = scaleSizes[i];
+        sceneModels[i].tx = scale_tx[i];
+        globalRotationZZ_ON = 0;
+        globalAngleZZ1 = [0,0,0,0,0,0,0,0,0]
+        sceneModels[i].position = [ 0.0, 0.0, 1.0, 0.0 ];
+        sceneModels[i].rotZZOn = false;
+        numb=[1,0,0,0,0,0,0,0,0]
+        sceneModels[i].setRotAngleZZ( numb[i] );
+  		}
+      compare_scale = 1;
+    } else {
+        document.getElementById("stop-translation").removeAttribute("disabled");
+        document.getElementById("slower-translation").removeAttribute("disabled");
+        document.getElementById("faster-translation").removeAttribute("disabled");
+        document.getElementById("make-scale").removeAttribute("disabled");
+        document.getElementById("reset").removeAttribute("disabled");
+        document.getElementById("compare-scale").innerHTML = "ON";
+        document.getElementById("make-scale").innerHTML = "ON";
+        document.getElementById("stop-translation").innerHTML = "OFF";
+        for(var i = 0; i < sceneModels.length; i++ )
+    	  {
+          sceneModels[i].sz = initSizes[i];
+          sceneModels[i].sy = initSizes[i];
+          sceneModels[i].sx = initSizes[i];
+          sceneModels[i].tx = init_tx[i];
+          globalRotationZZ_ON = 1;
+          if(i!=0){
+            sceneModels[i].position = [ -2.0, 0.0, 0.5, 0.0 ];
+            sceneModels[i].rotZZOn = true;
+          }
+    		}
+        scale = 0;
+        compare_scale = 0;
+        side = 0;
+    }
+
+	};
+
   document.getElementById("reset").onclick = function(){
 
     for(var i = 0; i < sceneModels.length; i++ )
 	    {
-			sceneModels[i].sz = initSizes[i];
-      sceneModels[i].sy = initSizes[i];
-      sceneModels[i].sx = initSizes[i];
+        sceneModels[i].sz = initSizes[i];
+        sceneModels[i].sy = initSizes[i];
+        sceneModels[i].sx = initSizes[i];
+        sceneModels[i].tx = init_tx[i];
+        globalRotationZZ_ON = 1;
+        if(i!=0){
+          sceneModels[i].position = [ -2.0, 0.0, 0.5, 0.0 ];
+          sceneModels[i].rotZZOn = true;
+        }
+        globalAngleZZ1 = [0,0,0,0,0,0,0,0,0]
+        numb=[1,0,0,0,0,0,0,0,0]
+        sceneModels[i].setRotAngleZZ( numb[i] );
 		}
+    scale = 0;
+    side = 0;
+    globalRotationZZ_SPEED = 1;
+	};
+
+  document.getElementById("asteroid").onclick = function(){
+    if(asteroid==0){
+      asteroid=1;
+    }
+    else{
+      asteroid=0;
+    }
 	};
 }
 
@@ -742,6 +940,8 @@ function runWebGL() {
 	shaderProgram = initShaders( gl );
 
 	setEventListeners();
+
+  initTexture();
 
 	tick();		// A timer controls the rendering / animation
 
