@@ -1,10 +1,6 @@
-//////////////////////////////////////////////////////////////////////////////
 //
 //  A class for instantiating light sources.
 //
-//  J. Madeira - Oct. 2015 + November 2017
-//
-//////////////////////////////////////////////////////////////////////////////
 
 //----------------------------------------------------------------------------
 //
@@ -45,7 +41,7 @@ function LightSource( ) {
 
 	this.rotAngleZZ = 0.0;
 
-	// NEW --- Rotation speed factor - Allow different speeds
+	// Rotation speed factor - Allow different speeds
 
 	this.rotationSpeed = 1.0;
 }
@@ -119,7 +115,7 @@ LightSource.prototype.setAmbIntensity = function( r, g, b ) {
 	this.ambientIntensity[2] = b;
 }
 
-// isRotOn #####################################################################
+// isRotOn
 LightSource.prototype.isRotXXOn = function() {
 
 	return this.rotXXOn;
@@ -135,7 +131,7 @@ LightSource.prototype.isRotZZOn = function() {
 	return this.rotZZOn;
 }
 
-// switchRotOn ################################################################
+// switchRotOn
 LightSource.prototype.switchRotXXOn = function() {
 
 	this.rotXXOn = true;
@@ -166,7 +162,7 @@ LightSource.prototype.switchRotZZOff = function() {
 	this.rotZZOn = false;
 }
 
-// get/set RotAngle ############################################################
+// get/set RotAngle
 LightSource.prototype.getRotAngleXX = function() {
 
 	return this.rotAngleXX;
@@ -197,7 +193,6 @@ LightSource.prototype.setRotAngleZZ = function( angle ) {
 	this.rotAngleZZ = angle;
 }
 
-// #############################################################################
 LightSource.prototype.getRotationSpeed = function() {
 
 	return this.rotationSpeed;
@@ -208,10 +203,6 @@ LightSource.prototype.setRotationSpeed = function( s ) {
 	this.rotationSpeed = s;
 }
 
-
-// COMPLETE THE MISSING METHODS !!
-
-
 //----------------------------------------------------------------------------
 
 //  Instantiating light sources
@@ -220,20 +211,4 @@ LightSource.prototype.setRotationSpeed = function( s ) {
 var lightSources = [];
 
 lightSources.push( new LightSource() );
-
-// lightSources[0].setPosition( -0.0, 0.0, 0.1, 0.0 );
-//
-// lightSources[0].setIntensity( 1.0, 0.4, 0.05 );
-//
-// lightSources[0].setAmbIntensity( 1.0, 0.4, 0.05 );
-
 lightSources.push( new LightSource() );
-
-// lightSources[1].setPosition( -1.0, 0.0, 0.1, 0.0 );
-//
-// lightSources[1].setIntensity( 1.0, 1.8, 1.55 );
-//
-// lightSources[1].setAmbIntensity( 1.0, 0.4, 0.05 );
-// lightSources[1].switchRotZZOn();
-//
-// lightSources[1].setRotationSpeed( 0.8 );

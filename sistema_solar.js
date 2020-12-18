@@ -1,17 +1,4 @@
-//////////////////////////////////////////////////////////////////////////////
-//
-//  WebGL_example_24_GPU_per_vertex.js
-//
-//  Phong Illumination Model on the GPU - Per vertex shading - Several light sources
-//
-//  Reference: E. Angel examples
-//
-//  J. Madeira - November 2017 + November 2018
-//
-//////////////////////////////////////////////////////////////////////////////
 
-
-//----------------------------------------------------------------------------
 //
 // Global Variables
 //
@@ -24,16 +11,25 @@ var triangleVertexPositionBuffer = null;
 
 var triangleVertexNormalBuffer = null;
 
+// Nossa escala
 var initSizes = [0.12, 0.027, 0.04, 0.045, 0.031, 0.07, 0.067, 0.04, 0.03];
+
+// Escala real
 var scaleSizes = [0.4, 0.0014, 0.0035, 0.0037, 0.0019, 0.04, 0.033, 0.015, 0.014];
 
+
 var init_tx = [0.0, 0.17, 0.25, 0.35, 0.44, 0.57, 0.74, 0.87, 0.96]
-var scale_tx = [0.0, 0.43, 0.46, 0.50, 0.60, 0.74, 0.85, 0.92, 0.96]
+var scale_tx = [0.0, 0.43, 0.45, 0.48, 0.51, 0.58, 0.69, 0.78, 0.84]
+
 var scale = 0;
 var compare_scale = 0;
-var side=0;
-// The GLOBAL transformation parameters
+var side = 0;
+var asteroid = 0;
 
+var lastTime = 0;
+var numb = [1, 0, 0, 0, 0, 0, 0, 0, 0];
+
+// The GLOBAL transformation parameters
 var globalAngleYY = 0.0;
 var globalAngleXX = 0.0;
 var globalAngleZZ1 = [0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0];
@@ -49,13 +45,7 @@ sceneModels[3].normals.slice(), sceneModels[4].normals.slice(), sceneModels[5].n
 sceneModels[6].normals.slice(), sceneModels[7].normals.slice(), sceneModels[8].normals.slice()];
 
 
-// for (var i = 0; i < sceneModels.length; i++) {
-//   initVertices.push(sceneModels[i].vertices.slice());
-//   initNormals.push(sceneModels[i].normals.slice());
-// }
-var asteroid = 0;
 // GLOBAL Animation controls
-
 var globalRotationYY_ON = 0;
 var globalRotationYY_DIR = 1;
 var globalRotationYY_SPEED = 1;
@@ -76,17 +66,11 @@ var primitiveType = null;
 
 var projectionType = 1;
 
-// NEW --- The viewer position
-
 // It has to be updated according to the projection type
 
 var pos_Viewer = [ 0.0, 0.0, 0.0, 1.0 ];
 
-
-//----------------------------------------------------------------------------
-//
-// NEW - To count the number of frames per second (fps)
-//
+// To count fps
 
 var elapsedTime = 0;
 
@@ -159,10 +143,6 @@ function initTexture() {
 
 function initBuffers( model ) {
 
-	// Vertex Coordinates
-
-
-
   if(asteroid){
     cubeVertexPositionBuffer = gl.createBuffer();
   	gl.bindBuffer(gl.ARRAY_BUFFER, cubeVertexPositionBuffer);
@@ -186,7 +166,8 @@ function initBuffers( model ) {
     cubeVertexIndexBuffer.itemSize = 1;
     cubeVertexIndexBuffer.numItems = 216;
   }
-  else{
+  else {
+
     triangleVertexPositionBuffer = gl.createBuffer();
   	gl.bindBuffer(gl.ARRAY_BUFFER, triangleVertexPositionBuffer);
   	gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(model.vertices), gl.STATIC_DRAW);
@@ -227,8 +208,6 @@ function drawModel( model,
 
 	// Concatenate with the particular model transformations
 
-    // Pay attention to transformation order !!
-
 	mvMatrix = mult( mvMatrix, translationMatrix( model.tx, model.ty, model.tz ) );
 
 	mvMatrix = mult( mvMatrix, rotationZZMatrix( model.rotAngleZZ ) );
@@ -247,46 +226,38 @@ function drawModel( model,
 
 	// Associating the data to the vertex shader
 
-	// This can be done in a better way !!
-
 	// Vertex Coordinates and Vertex Normal Vectors
 
 	initBuffers(model);
-
 
 	// Material properties
 
 	gl.uniform3fv( gl.getUniformLocation(shaderProgram, "k_ambient"),
 		flatten(model.kAmbi) );
 
-    gl.uniform3fv( gl.getUniformLocation(shaderProgram, "k_diffuse"),
-        flatten(model.kDiff) );
+  gl.uniform3fv( gl.getUniformLocation(shaderProgram, "k_diffuse"),
+      flatten(model.kDiff) );
 
-    gl.uniform3fv( gl.getUniformLocation(shaderProgram, "k_specular"),
-        flatten(model.kSpec) );
+  gl.uniform3fv( gl.getUniformLocation(shaderProgram, "k_specular"),
+      flatten(model.kSpec) );
 
 	gl.uniform1f( gl.getUniformLocation(shaderProgram, "shininess"),
 		model.nPhong );
 
-    // Light Sources
+  // Light Sources
 
 	var numLights = lightSources.length;
 	gl.uniform1i( gl.getUniformLocation(shaderProgram, "numLights"),
 		numLights );
 
-	//Light Sources
+	gl.uniform1i( gl.getUniformLocation(shaderProgram, "allLights[" + String(0) + "].isOn"),
+		model.isOn );
 
-	// for(var i = 0; i < lightSources.length; i++ )
-	// {
-		gl.uniform1i( gl.getUniformLocation(shaderProgram, "allLights[" + String(0) + "].isOn"),
-			model.isOn );
+	gl.uniform4fv( gl.getUniformLocation(shaderProgram, "allLights[" + String(0) + "].position"),
+		flatten(model.position) );
 
-		gl.uniform4fv( gl.getUniformLocation(shaderProgram, "allLights[" + String(0) + "].position"),
-			flatten(model.position) );
-
-		gl.uniform3fv( gl.getUniformLocation(shaderProgram, "allLights[" + String(0) + "].intensities"),
-			flatten(model.intensity) );
-    // }
+	gl.uniform3fv( gl.getUniformLocation(shaderProgram, "allLights[" + String(0) + "].intensities"),
+		flatten(model.intensity) );
 
 	// Drawing
 
@@ -295,10 +266,6 @@ function drawModel( model,
 	if( primitiveType == gl.LINE_LOOP ) {
 
 		// To simulate wireframe drawing!
-
-		// No faces are defined! There are no hidden lines!
-
-		// Taking the vertices 3 by 3 and drawing a LINE_LOOP
 
 		var i;
 
@@ -313,21 +280,21 @@ function drawModel( model,
 
 	}
 
-  // NEW --- Textures
+  // Textures
   if(asteroid){
     gl.bindBuffer(gl.ARRAY_BUFFER, cubeVertexTextureCoordBuffer);
-      gl.vertexAttribPointer(shaderProgram.textureCoordAttribute, cubeVertexTextureCoordBuffer.itemSize, gl.FLOAT, false, 0, 0);
+    gl.vertexAttribPointer(shaderProgram.textureCoordAttribute, cubeVertexTextureCoordBuffer.itemSize, gl.FLOAT, false, 0, 0);
 
-      gl.activeTexture(gl.TEXTURE0);
-      gl.bindTexture(gl.TEXTURE_2D, webGLTexture);
+    gl.activeTexture(gl.TEXTURE0);
+    gl.bindTexture(gl.TEXTURE_2D, webGLTexture);
 
-      gl.uniform1i(shaderProgram.samplerUniform, 0);
+    gl.uniform1i(shaderProgram.samplerUniform, 0);
 
-      // The vertex indices
+    // The vertex indices
 
-      gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, cubeVertexIndexBuffer);
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, cubeVertexIndexBuffer);
 
-  	// Drawing the triangles --- NEW --- DRAWING ELEMENTS
+  	// Drawing the triangles
 
   	gl.drawElements(gl.TRIANGLES, cubeVertexIndexBuffer.numItems, gl.UNSIGNED_SHORT, 0);
   }
@@ -360,15 +327,11 @@ function drawScene() {
 
 		globalTz = 0.0;
 
-		// NEW --- The viewer is on the ZZ axis at an indefinite distance
+		// The viewer is on the ZZ axis at an indefinite distance
 
 		pos_Viewer[0] = pos_Viewer[1] = pos_Viewer[3] = 0.0;
 
 		pos_Viewer[2] = 1.0;
-
-		// TO BE DONE !
-
-		// Allow the user to control the size of the view volume
 	}
 	else {
 
@@ -384,15 +347,9 @@ function drawScene() {
 
 		globalTz = -2.5;
 
-		// NEW --- The viewer is on (0,0,0)
-
 		pos_Viewer[0] = pos_Viewer[1] = pos_Viewer[2] = 0.0;
 
 		pos_Viewer[3] = 1.0;
-
-		// TO BE DONE !
-
-		// Allow the user to control the size of the view volume
 	}
 
 	// Passing the Projection Matrix to apply the current projection
@@ -401,7 +358,7 @@ function drawScene() {
 
 	gl.uniformMatrix4fv(pUniform, false, new Float32Array(flatten(pMatrix)));
 
-	// NEW --- Passing the viewer position to the vertex shader
+	// Passing the viewer position to the vertex shader
 
 	gl.uniform4fv( gl.getUniformLocation(shaderProgram, "viewerPosition"),
         flatten(pos_Viewer) );
@@ -410,51 +367,20 @@ function drawScene() {
 
 	mvMatrix = translationMatrix( 0, 0, globalTz );
 
-	// NEW - Updating the position of the light sources, if required
-
-	// FOR EACH LIGHT SOURCE
-
-	// for(var i = 0; i < lightSources.length; i++ )
-	// {
-	// 	// Animating the light source, if defined
-  //
-	// 	var lightSourceMatrix = mat4();
-  //
-	// 	if( !lightSources[i].isOff() ) {
-  //     if( lightSources[i].isRotZZOn() )
-	// 		{
-	// 			lightSourceMatrix = mult(
-	// 					lightSourceMatrix,
-	// 					rotationZZMatrix( lightSources[i].getRotAngleZZ() ) );
-	// 		}
-	// 	}
-
-		// NEW Passing the Light Source Matrix to apply
-
-	// 	var lsmUniform = gl.getUniformLocation(shaderProgram, "allLights["+ String(i) + "].lightSourceMatrix");
-  //
-	// 	gl.uniformMatrix4fv(lsmUniform, false, new Float32Array(flatten(lightSourceMatrix)));
-	// }
-
 	// Instantianting all scene models
 
 	for(var i = sceneModels.length-1; i >= 0; i-- )
 	{
     var lightSourceMatrix = mat4();
-    //if( sceneModels[i].lightZZOn )
-    // {
-       lightSourceMatrix = mult(
-           lightSourceMatrix,
-           rotationZZMatrix( sceneModels[i].getRotAngleZZ() ) );
-    // }
-
-
+    lightSourceMatrix = mult(
+        lightSourceMatrix,
+        rotationZZMatrix( sceneModels[i].getRotAngleZZ() ) );
 
     mvMatrix = mult( mvMatrix,
                    rotationZZMatrix( globalAngleZZ1[i] ) );
 
-     var lsmUniform = gl.getUniformLocation(shaderProgram, "allLights["+ String(0) + "].lightSourceMatrix");
-     gl.uniformMatrix4fv(lsmUniform, false, new Float32Array(flatten(lightSourceMatrix)));
+    var lsmUniform = gl.getUniformLocation(shaderProgram, "allLights["+ String(0) + "].lightSourceMatrix");
+    gl.uniformMatrix4fv(lsmUniform, false, new Float32Array(flatten(lightSourceMatrix)));
     if(!asteroid){
       drawModel( sceneModels[i],
   			       mvMatrix,
@@ -465,27 +391,15 @@ function drawScene() {
   			       mvMatrix,
   	           primitiveType );
     }
-
-
-
   }
-
-
-
-	// NEW - Counting the frames
-
+  // Counting the frames
 	countFrames();
 }
 
 //----------------------------------------------------------------------------
 //
-//  NEW --- Animation
+//  Animation
 //
-
-// Animation --- Updating transformation parameters
-
-var lastTime = 0;
-var numb=[1,0,0,0,0,0,0,0,0]
 
 function animate() {
 
@@ -495,16 +409,6 @@ function animate() {
 
 		var elapsed = timeNow - lastTime;
 
-		// Global rotation
-
-		if( globalRotationYY_ON ) {
-
-			globalAngleYY += globalRotationYY_DIR * globalRotationYY_SPEED * (90 * elapsed) / 1000.0;
-	    }
-    if( globalRotationXX_ON ) {
-
-			globalAngleXX += globalRotationXX_DIR * globalRotationXX_SPEED * (90 * elapsed) / 1000.0;
-	    }
     if( globalRotationZZ_ON ) {
       original = globalRotationZZ_DIR * globalRotationZZ_SPEED * (90 * elapsed) / 2000.0;
 			globalAngleZZ1[0] += globalRotationZZ_DIR * globalRotationZZ_SPEED * (90 * elapsed) / 100.0;
@@ -518,7 +422,7 @@ function animate() {
       globalAngleZZ1[8] += globalRotationZZ_DIR * globalRotationZZ_SPEED * (90 * elapsed) / 83120.0;
 	    }
 
-		// For every model --- Local rotations
+		// For every model --- Local rotations and local light sources
 
 		for(var i = 0; i < sceneModels.length; i++ )
     {
@@ -530,7 +434,6 @@ function animate() {
       if( sceneModels[i].lightZZOn ) {
 
       	var angle = sceneModels[i].getRotAngleZZ() + sceneModels[i].l_rotationSpeed * (90 * elapsed * original ) / 1000.0;
-
         if(angle!=0){
           numb[i]=angle;
         }
@@ -541,25 +444,6 @@ function animate() {
 
       }
 		}
-
-		// Rotating the light sources
-
-		// for(var i = 0; i < lightSources.length; i++ )
-	  //   {
-    //     if( lightSources[i].isRotXXOn() ) {
-    //
-  	// 			var angle = lightSources[i].getRotAngleXX() + lightSources[i].getRotationSpeed() * (90 * elapsed) / 1000.0;
-    //
-  	// 			lightSources[i].setRotAngleXX( angle );
-  	// 		}
-    //
-  	// 		if( lightSources[i].isRotYYOn() ) {
-    //
-  	// 			var angle = lightSources[i].getRotAngleYY() + lightSources[i].getRotationSpeed() * (90 * elapsed) / 1000.0;
-    //
-  	// 			lightSources[i].setRotAngleYY( angle );
-  	// 		}
-		// }
 }
 
 	lastTime = timeNow;
@@ -595,7 +479,7 @@ var currentlyPressedKeys = {};
 function handleKeys() {
 
 	if (currentlyPressedKeys[40]) {
-		// Arrow Up
+		// Arrow Down
 
     for(var i = 0; i < sceneModels.length; i++) {
       sceneModels[i].sx *= 0.97;
@@ -604,8 +488,7 @@ function handleKeys() {
     }
 	}
 	if (currentlyPressedKeys[38]) {
-
-		// Arrow Down
+		// Arrow Up
 
     for(var i = 0; i < sceneModels.length; i++) {
       sceneModels[i].sx *= 1.03;
@@ -615,7 +498,7 @@ function handleKeys() {
 	}
   if(side && globalRotationZZ_ON == 0){
     if (currentlyPressedKeys[39]) {
-  		// Arrow Up
+  		// Arrow Right
       if(sceneModels[8].tx > -0.9){
         for(var i = 0; i < sceneModels.length; i++) {
 
@@ -625,7 +508,7 @@ function handleKeys() {
   	}
 
     if (currentlyPressedKeys[37]) {
-  		// Arrow Up
+  		// Arrow Left
       if(sceneModels[0].tx < 0.9){
         for(var i = 0; i < sceneModels.length; i++) {
 
@@ -640,8 +523,6 @@ function handleKeys() {
 //----------------------------------------------------------------------------
 
 function setEventListeners(){
-
-    // Dropdown list
 
     function handleKeyDown(event) {
         currentlyPressedKeys[event.keyCode] = true;
@@ -721,7 +602,6 @@ function setEventListeners(){
 
 		// Stopping the translation
 
-		// For every model
     if (globalRotationZZ_ON) {
       globalRotationZZ_ON = 0;
       document.getElementById("stop-translation").innerHTML = "ON";
@@ -755,12 +635,10 @@ function setEventListeners(){
 
 	document.getElementById("slower-translation").onclick = function(){
 
-		// For every model
     globalRotationZZ_SPEED *= 0.8;
     for(var i = 0; i < sceneModels.length; i++ )
 	    {
 			sceneModels[i].rotZZSpeed *= 0.75;
-      //sceneModels[i].l_rotationSpeed *=0.75;
 		}
 	};
 
@@ -770,10 +648,10 @@ function setEventListeners(){
     for(var i = 0; i < sceneModels.length; i++ )
 	    {
 			sceneModels[i].rotZZSpeed *= 1.25;
-      //sceneModels[i].l_rotationSpeed *=1.25;
 		}
 	};
 
+  // Tornar o sistema à escala
   document.getElementById("make-scale").onclick = function(){
     if (!scale) {
       document.getElementById("make-scale").innerHTML = "OFF";
@@ -801,6 +679,7 @@ function setEventListeners(){
 
 	};
 
+  // Tornar sistema à escala para fazer comparações
   document.getElementById("compare-scale").onclick = function(){
     side = 1;
     if (!compare_scale) {
@@ -875,11 +754,25 @@ function setEventListeners(){
 	};
 
   document.getElementById("asteroid").onclick = function(){
-    if(asteroid==0){
-      asteroid=1;
+    if(asteroid == 0) {
+      document.getElementById("stop-translation").setAttribute("disabled", "disabled");
+      document.getElementById("slower-translation").setAttribute("disabled", "disabled");
+      document.getElementById("faster-translation").setAttribute("disabled", "disabled");
+      document.getElementById("make-scale").setAttribute("disabled", "disabled");
+      document.getElementById("compare-scale").setAttribute("disabled", "disabled");
+      document.getElementById("reset").setAttribute("disabled", "disabled");
+      document.getElementById("asteroid").innerHTML = "OFF";
+      asteroid = 1;
     }
     else{
-      asteroid=0;
+      document.getElementById("stop-translation").removeAttribute("disabled");
+      document.getElementById("slower-translation").removeAttribute("disabled");
+      document.getElementById("faster-translation").removeAttribute("disabled");
+      document.getElementById("make-scale").removeAttribute("disabled");
+      document.getElementById("compare-scale").removeAttribute("disabled");
+      document.getElementById("reset").removeAttribute("disabled");
+      document.getElementById("asteroid").innerHTML = "ON";
+      asteroid = 0;
     }
 	};
 }
@@ -902,7 +795,7 @@ function initWebGL( canvas ) {
 
 		// DEFAULT: The viewport background color is WHITE
 
-		// NEW - Drawing the triangles defining the model
+		// Drawing the triangles defining the model
 
 		primitiveType = gl.TRIANGLES;
 
