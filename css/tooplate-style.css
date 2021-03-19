@@ -17,7 +17,7 @@ html, body {
 }
 
 /*---------------------------------------
-  TYPOGRAPHY              
+  TYPOGRAPHY
 -----------------------------------------*/
 
 h1,h2,h3,h4,h5,h6 {
@@ -58,8 +58,166 @@ p {
   letter-spacing: 0.5px;
 }
 
+/*-------------------------------------
+/*--------------------*/
+/* FEATURES */
+/*--------------------*/
+
+
+#features{
+background-color: #fff;
+display: inline;
+float: left;
+padding: 70px 0;
+width: 100%;
+}
+
+
+.title-area {
+display: inline;
+float: left;
+padding: 0 150px;
+text-align: center;
+width: 100%;
+}
+
+
+.title-area .title {
+border-bottom: 2px solid #ccc;
+color: #777;
+display: inline-block;
+font-size: 33px;
+font-weight: 700;
+padding-bottom: 20px;
+position: relative;
+text-transform: uppercase;
+}
+
+
+.title-area .title::before {
+content: "";
+height: 2px;
+left: 0;
+position: absolute;
+top: 60px;
+width: 150px;
+}
+
+
+.title-area p{
+color: #777777;
+font-size: 18px;
+font-weight: 300;
+line-height: 1.8;
+padding: 20px 0 30px;
+}
+
+
+.features-area{
+display: inline;
+float: left;
+margin-top: 20px;
+width: 100%;
+}
+
+
+.features-left {
+display: inline;
+float: left;
+width: 100%;
+}
+
+
+.features-list li {
+float: left;
+padding: 25px 0;
+position: relative;
+}
+
+
+.features-list li:hover .fa{
+color: #fff;
+}
+
+
+.features-list li i{
+background-color: #777;
+border-radius: 50%;
+color: #fff;
+display: block;
+font-size: 35px;
+height: 90px;
+line-height: 93px;
+margin: 20px auto;
+position: absolute;
+text-align: center;
+top: 10px;
+transition: all 0.5s ease 0s;
+width: 90px;
+}
+
+
+.features-list-left li i {
+  left: 0;
+}
+
+
+.features-list-left .features-content{
+padding-left: 115px;
+}
+
+
+.features-content{
+float: left;
+display: inline;
+width: 100%;
+}
+
+
+.features-content h4 {
+font-size: 18px;
+text-transform: uppercase;
+}
+
+
+.features-content p{
+font-size: 15px;
+}
+
+
+.feature-img {
+display: inline;
+float: left;
+padding: 0 30px;
+text-align: center;
+width: 100%;
+}
+
+
+.feature-img img {
+  width: 100%;
+}
+
+
+.features-right{
+display: inline;
+float: left;
+width: 100%;
+}
+
+
+.features-list-right li i {
+  right: 0;
+}
+
+
+.features-list-right .features-content{
+padding-right: 115px;
+}
+
+
 /*---------------------------------------
-  BUTTONS               
+  BUTTONS
 -----------------------------------------*/
 
 .section-btn {
@@ -136,11 +294,11 @@ p {
 
 .csstransforms3d .section-btn button:hover span::before,
 .csstransforms3d .section-btn button:hover span::before {
-  background: #000000;  
+  background: #000000;
 }
 
 /*---------------------------------------
-  GENERAL               
+  GENERAL
 -----------------------------------------*/
 
 html{
@@ -210,7 +368,7 @@ a:hover, a:active, a:focus {
 }
 
 /*---------------------------------------
-  PRE LOADER              
+  PRE LOADER
 -----------------------------------------*/
 
 .preloader {
@@ -258,7 +416,7 @@ a:hover, a:active, a:focus {
 }
 
 /*---------------------------------------
-  MENU             
+  MENU
 -----------------------------------------*/
 
 .custom-navbar {
@@ -330,7 +488,7 @@ a:hover, a:active, a:focus {
 
 @media(min-width:768px) {
   .custom-navbar {
-    background: 0 0; 
+    background: 0 0;
   }
   .custom-navbar.top-nav-collapse {
     background: #58c5dd;
@@ -339,7 +497,7 @@ a:hover, a:active, a:focus {
 }
 
 /*---------------------------------------
-  HOME             
+  HOME
 -----------------------------------------*/
 
 #home {
@@ -392,7 +550,7 @@ a:hover, a:active, a:focus {
 }
 
 /*---------------------------------------
-  ABOUT              
+  ABOUT
 -----------------------------------------*/
 
 #about {
@@ -408,7 +566,7 @@ a:hover, a:active, a:focus {
 }
 
 /*---------------------------------------
-  PROJECT              
+  PROJECT
 -----------------------------------------*/
 
 .project-item {
@@ -462,7 +620,7 @@ a:hover, a:active, a:focus {
 }
 
 /*---------------------------------------
-   FACTS            
+   FACTS
 -----------------------------------------*/
 
 .counter {
@@ -480,6 +638,18 @@ a:hover, a:active, a:focus {
   flex-direction: column;
 }
 
+.box2 {
+  background: lightblue;
+  border-radius: 50%;
+  width: 100px;
+  height: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: space-evenly;
+  flex-direction: column;
+}
+
+
 .box .icon, .box .counter, .box .text{
   color: #ffffff
 }
@@ -493,7 +663,7 @@ a:hover, a:active, a:focus {
 }
 
 /*---------------------------------------
-   TEAM             
+   TEAM
 -----------------------------------------*/
 
 #team .item {
@@ -554,7 +724,7 @@ a:hover, a:active, a:focus {
 }
 
 /*---------------------------------------
-  FOOTER              
+  FOOTER
 -----------------------------------------*/
 
 footer {
@@ -580,7 +750,7 @@ hr.solidOne {
 }
 
 /*---------------------------------------
-  SOCIAL ICON             
+  SOCIAL ICON
 -----------------------------------------*/
 
 .social-icon {
@@ -618,7 +788,7 @@ hr.solidOne {
 }
 
 /*---------------------------------------
-  MOBILE RESPONSIVE              
+  MOBILE RESPONSIVE
 -----------------------------------------*/
 
 @media (max-width: 992px) {
