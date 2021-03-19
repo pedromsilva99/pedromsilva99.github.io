@@ -1,320 +1,373 @@
 <!DOCTYPE html>
-
-<html>
-
+<html lang="en">
 <head>
 
-<title>Solar System</title>
-
-<meta http-equiv="content-type" content="text/html; charset=ISO-8859-1">
-
-<!-- CSS -->
-<link rel="preconnect" href="https://fonts.gstatic.com">
-<link href="https://fonts.googleapis.com/css2?family=Bungee+Outline&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/css/bootstrap.min.css" integrity="sha384-TX8t27EcRE3e/ihU7zmQxVncDAy5uIKz4rEkgIXeMed4M0jlfIDPvg6uqKI2xXr2" crossorigin="anonymous">
-<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ho+j7jyWK8fNQe+A12Hb8AhRq26LrZ/JpcUGGOn+Y7RsweNrtN/tE3MoK7ZeZDyx" crossorigin="anonymous"></script>
-
-<!-- Styles -->
-<style>
-html, body {
-  overflow: hidden;
-}
-h2 {
-  line-height: 3.0;
-  font-family: 'Bungee Outline', cursive;
-  font-size: 50px;
-  margin-top: 0;
-}
-</style>
-<script id="shader-vs" type="x-shader/x-vertex">
-
-
-    attribute vec3 vPosition;
-
-    uniform mat4 uMVMatrix;
-
-    uniform mat4 uPMatrix;
-
-    varying vec4 fColor;
-
-    // For the Phong Illumination Model
-
-    attribute vec3 vNormal;
-
-    uniform vec4 viewerPosition;
-
-    // Array of lights
-
-	#define MAX_LIGHTS 5
-
-	uniform int numLights;
-
-	uniform struct Light {
-
-		int isOn;
-
-		vec4 position;
-
-		mat4 lightSourceMatrix;
-
-		vec3 intensities;
-
-		vec3 ambientIntensities;
-
-	} allLights[MAX_LIGHTS];
-
-    // The material properties
-
-	uniform vec3 k_ambient;
-
-	uniform vec3 k_diffuse;
-
-	uniform vec3 k_specular;
-
-    uniform float shininess;
-
-    void main(void) {
-
-		// To allow seeing the points drawn
-
-		gl_PointSize = 5.0;
-
-		// Just converting the (x,y,z) vertices to Homogeneous Coord.
-
-		// And multiplying by the Projection and the Model-View matrix
-
-        gl_Position = uPMatrix * uMVMatrix * vec4(vPosition, 1.0);
-
-        // Phong Illumination Model
-
-        // pos is vertex position after applying the global transformation
-
-        vec3 pos = (uMVMatrix * vec4(vPosition, 1.0)).xyz;
-
-		// ITERATING THROUGH ALL LIGHT SOURCES
-
-		fColor = vec4(0.0, 0.0, 0.0, 0.0);	// To add all illumination components
-
-		// THE FOR LOOP NEEDS A STOPPING CONSTANT VALUE
-
-		for( int i = 0; i < MAX_LIGHTS; i++ )
-		{
-			if( i == numLights )
-
-				break;
-
-			if( allLights[i].isOn == 0 )
-
-				continue;
-
-			// Ambient component is constant for each light source
-
-			vec4 ambient = vec4( k_ambient * allLights[i].ambientIntensities, 1.0 );
-
-			fColor += ambient;
-
-           // vector from vertex position to light source
-
-           vec3 L;
-
-           // check for directional light
-
-           if(allLights[i].position.w == 0.0)
-
-				L = normalize( (allLights[i].lightSourceMatrix * allLights[i].position).xyz );
-
-           else
-
-			    L = normalize( (allLights[i].lightSourceMatrix * allLights[i].position).xyz - pos );
-
-		   // Vector from the vertex position to the eye
-
-		   vec3 E;
-
-		   // The viewer is at the origin or at an indefinite distance
-		   // on the ZZ axis
-
-		   if(viewerPosition.w == 1.0)
-
-			   // At the origin
-
-			   E = -normalize( pos );
-
-           else
-
-			   // On the ZZ axis
-
-			   E = vec3(0,0,1);
-
-           // Halfway vector
-
-           vec3 H = normalize( L + E );
-
-           // Transform vertex normal into eye coordinates
-
-           vec4 N = normalize( uMVMatrix * vec4(vNormal, 0.0));
-
-           // Compute terms in the illumination equation
-
-		   // Diffuse component
-
-		   float dotProductLN = L[0] * N[0] + L[1] * N[1] + L[2] * N[2];
-
-           float cosNL = max( dotProductLN, 0.0 );
-
-           vec4  diffuse = vec4( k_diffuse * cosNL * allLights[i].intensities, 1.0 );
-
-           // Specular component
-
-           float dotProductNH = N[0] * H[0] + N[1] * H[1] + N[2] * H[2];
-
-		   float cosNH = pow( max( dotProductNH, 0.0 ), shininess );
-
-           vec4  specular = vec4( k_specular * cosNH * allLights[i].intensities, 1.0 );
-
-           if( dotProductLN < 0.0 ) {
-
-		      specular = vec4(0.0, 0.0, 0.0, 1.0);
-           }
-
-		   // Adding the components
-
-           fColor += diffuse + specular;
-	   }
-	}
-
-</script>
-
-<script id="shader-fs" type="x-shader/x-fragment">
-
-	precision mediump float;
-
-	varying vec4 fColor;
-
-	void main(void) {
-
-		// Using the passed vertex color
-
-		gl_FragColor = fColor;
-	}
-
-</script>
-
-<!-- The JS files -->
-
-<!-- Some useful functions for browser compatibility -->
-
-<script type="text/javascript" src="webgl-utils.js"></script>
-
-<!-- Handling vectors and matrices -->
-
-<script type="text/javascript" src="maths.js"></script>
-
-<!-- Processing triangle mesh models -->
-
-<script type="text/javascript" src="models.js"></script>
-
-<!-- Creating the light sources -->
-
-<script type="text/javascript" src="lightSources.js"></script>
-
-<!-- Creating the scene models -->
-
-<script type="text/javascript" src="sceneModels.js"></script>
-
-<!-- WebGL code -->
-
-<script type="text/javascript" src="initShaders.js"></script>
-
-<script type="text/javascript" src="sistema_solar.js"></script>
-
-<script type="text/javascript">
-    $(function () {
-      $('[data-toggle="tooltip"]').tooltip()
-    });
-</script>
+<title>WiFi Monitor</title>
+<link rel="icon" type="image/png" sizes="16x16" href="images/logo.png">
+
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=Edge">
+<meta name="description" content="">
+<meta name="keywords" content="">
+<meta name="author" content="">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+<link rel="stylesheet" href="css/bootstrap.min.css">
+<link rel="stylesheet" href="css/font-awesome.min.css">
+<link rel="stylesheet" href="css/all.min.css">
+<link rel="stylesheet" href="css/magnific-popup.css">
+<link rel="stylesheet" href="css/owl.theme.css">
+<link rel="stylesheet" href="css/owl.carousel.css">
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+<!-- MAIN CSS -->
+<link rel="stylesheet" href="css/tooplate-style.css">
 
 </head>
+<body>
 
-<body onload="runWebGL();" style="background-image: url('wallpaper.png');">
-    <div class="row justify-content-between align-items-center">
+<!-- PRE LOADER -->
+<div class="preloader">
+     <div class="spinner">
+          <span class="sk-inner-circle"></span>
+     </div>
+</div>
 
-		<div class="col-md-5">
-				<canvas id="my-canvas" style="background-image: url('wallpaper.png');" width="750" height="750";></canvas>
-		</div>
-		<div class="col-md-5 text-light">
+<!-- MENU -->
+<div class="navbar custom-navbar navbar-fixed-top" role="navigation">
+     <div class="container">
 
-      <h2><span data-toggle="tooltip" data-placement="left" data-html="true" title="Pedro Goncalves <b>88859</b><br>Pedro Silva <b>89228</b>">3D Solar System</span></h2>
+          <!-- NAVBAR HEADER -->
+          <div class="navbar-header">
+               <button class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                    <span class="icon icon-bar"></span>
+                    <span class="icon icon-bar"></span>
+                    <span class="icon icon-bar"></span>
+               </button>
 
-      <p>Press <b>arrow up</b> to zoom in or <b>arrow down</b> to zoom out</p>
-      <p>Press <b>arrow left</b> and <b>arrow right</b> to navigate <b>in compare scale mode only</b></p>
+               <!-- lOGO -->
+               <a href="index.html" class="navbar-brand">Wifi Monitor</a>
+               <img src="images/logoNavBar.png" width="55" height="47"></img>
+          </div>
 
-      <p><b>Surface of the planets:</b>
+          <!-- MENU LINKS -->
+          <div class="collapse navbar-collapse">
+               <ul class="nav navbar-nav navbar-right">
+                    <li><a href="#home" class="smoothScroll">Home</a></li>
+                    <li><a href="docs.html" class="smoothScroll">Documentation</a></li>
+               </ul>
+          </div>
 
-			  <button class="btn btn-dark" id="soft">Soft</button>
+     </div>
+</div>
 
-        <button class="btn btn-dark" id="sharp">Sharp</button>
+<!-- HOME -->
+<section id="home" class="parallax-section">
+     <div class="overlay"></div>
+     <div class="container">
+          <div class="row">
+               <div class="col-md-8 col-sm-12">
+                    <div class="home-text">
+                         <h1>Monitoring the usage of UA's spaces using WiFi network</h1>
+                         <ul class="section-btn">
+                              <a href="#about" class="smoothScroll"><span data-hover="Discover More">Discover More</span></a>
+                         </ul>
+                    </div>
+               </div>
+          </div>
+     </div>
 
-			</p>
+     <!-- Video -->
+     <video controls autoplay loop muted>
+          <source src="videos/ua.mp4" type="video/mp4">
+          Your browser does not support the video tag.
+     </video>
+</section>
 
-      <p><b>Translation/Rotation:</b>
 
-			  <button class="btn btn-dark" id="stop-translation">OFF</button>
+<!-- ABOUT -->
+<section id="about" class="parallax-section">
+     <div class="container" data-aos="fade-up">
+          <div class="row">
+               <div class="col-md-offset-1 col-md-10 col-sm-12">
+                         <h4>Introducing WiFi Monitor</h4>
+                         <h1>This template is designed for you. Sed ornare, tortor nec placerat lacinia, 
+                              leo quam rutrum leo, eget posuere ipsum sem eu justo. Integer nunc libero.</h1>
+               </div>
 
-		    <button class="btn btn-dark" id="slower-translation">Slower</button>
+          </div>
+     </div>
+</section>
 
-		    <button class="btn btn-dark" id="faster-translation">Faster</button>
 
-			</p>
+<!-- PROJECT -->
+<section id="project" class="parallax-section">
+     <div class="container">
+          <div class="row">
 
-      <p><b>Scale</b>
+               <div class="col-md-6 col-sm-6">
+                    <!-- PROJECT ITEM -->
+                    <div class="project-item">
+                         <a href="images/project-image1.jpg" class="image-popup">
+                              <img src="images/project-image1.jpg" class="img-responsive" alt="">
+                         
+                              <div class="project-overlay">
+                                   <div class="project-info">
+                                        <h1>Beautiful Women</h1>
+                                        <h3>Click to pop up!</h3>
+                                   </div>
+                              </div>
+                         </a>
+                    </div>
+               </div>
 
-			  <button class="btn btn-dark" id="make-scale">ON</button>
+               <div class="col-md-6 col-sm-6">
+                    <!-- PROJECT ITEM -->
+                    <div class="project-item">
+                         <a href="images/project-image2.jpg" class="image-popup">
+                              <img src="images/project-image2.jpg" class="img-responsive" alt="">
+                         
+                              <div class="project-overlay">
+                                   <div class="project-info">
+                                        <h1>Nulla efficitur quam</h1>
+                                        <h3>Sed ligula accumsan</h3>
+                                   </div>
+                              </div>
+                         </a>
+                    </div>
+               </div>
 
-			</p>
+               <div class="col-md-6 col-sm-6">
+                    <!-- PROJECT ITEM -->
+                    <div class="project-item">
+                         <a href="images/project-image3.jpg" class="image-popup">
+                              <img src="images/project-image3.jpg" class="img-responsive" alt="">
+                         
+                              <div class="project-overlay">
+                                   <div class="project-info">
+                                        <h1>Large Sea Wave</h1>
+                                        <h3>Nam feugiat dui in nisi</h3>
+                                   </div>
+                              </div>
+                         </a>
+                    </div>
+               </div>
 
-      <p><b>Compare Scale</b>
+               <div class="col-md-6 col-sm-6">
+                    <!-- PROJECT ITEM -->
+                    <div class="project-item">
+                         <a href="images/project-image4.jpg" class="image-popup">
+                              <img src="images/project-image4.jpg" class="img-responsive" alt="">
+                         
+                              <div class="project-overlay">
+                                   <div class="project-info">
+                                        <h1>Lorem ipsum dolor</h1>
+                                        <h3>Mollis aliquam faucibus urna</h3>
+                                   </div>
+                              </div>
+                         </a>
+                    </div>
+               </div>               
 
-			  <button class="btn btn-dark" id="compare-scale">ON</button>
+          </div>
+     </div>
+</section>
 
-			</p>
+<!-- Facts -->
+<section id="facts" class="parallax-section">
+     <div class="container" data-aos="fade-up">
+          <div class="col-md-offset-2 col-md-8 col-sm-12">
+               <!-- SECTION TITLE -->
+               <div class="section-title">
+                    <h4 class="facts">Numbers of the University of Aveiro</h4>
+               </div>
+          </div>
+          <div id="facts-row" class="row">
+               <div id="counters">
+                    <div class="col-lg-3 col-6 text-center">
+                         <div class="box">
+                              <div class="icon"><i class="fas fa-3x fa-user-friends"></i></div>
+                              <div class="counter">13000</div>
+                              <h2 class="text">Students</h2>
+                         </div>
+                    </div>
+                    <div class="col-lg-3 col-6 text-center">
+                         <div class="box">
+                              <div class="icon"><i class="fas fa-3x fa-user-graduate"></i></div>
+                              <div class="counter">1000</div>
+                              <h2 class="text">Teachers</h2>
+                         </div>
+                    </div>
+                    <div class="col-lg-3 col-6 text-center">
+                         <div class="box">                         
+                              <div class="icon"><i class="fas fa-3x fa-walking"></i></div>
+                              <div class="counter">100</div>
+                              <h2 class="text">Visitors</h2>
+                         </div>
+                    </div>
+                    <div class="col-lg-3 col-6 text-center">
+                         <div class="box">
+                              <div class="icon"><i class="fas fa-3x fa-wifi"></i></div>
+                              <div class="counter">500</div>
+                              <h2 class="text">Access Points</h2>
+                         </div>
+                    </div>
+               </div>
+          </div>
+     </div>
+</section>
 
-      <p><b>Press to reset</b>:
+<!-- TEAM -->
+<section id="team" class="parallax-section">
+     <div class="container" data-aos="slide-up"> 
+          <div class="row">
+               <div class="col-md-offset-2 col-md-8 col-sm-12">
+                    <!-- SECTION TITLE -->
+                    <div class="section-title">
+                         <h4>Meet Our Team</h4>
+                    </div>
+               </div>
 
-        <button class="btn btn-dark" id="reset">Reset</button>
+               <div class="clearfix"></div>
 
-      </p>
+               <div id="owl-team" class="owl-carousel">
+                    <div class="col-md-4 col-sm-4 item">
+                         <div class="team-item">
+                              <img src="images/AntonioDomingues.jpeg" class="img-responsive" alt="">
+                              <div class="team-overlay">
+                                   <ul class="social-icon">
+                                        <li><a href="https://github.com/antonioccdomingues" class="fab fa-github"></a></li>
+                                   </ul>
+                              </div>
+                         </div>
+                         <p>António Domingues</p>
+                         <h3>antonioccdomingues@ua.pt</h3>
+                    </div>
 
-      </p>
+                    <div class="col-md-4 col-sm-4 item">
+                         <div class="team-item">
+                              <img src="images/DiogoDaniel.jpg" class="img-responsive" alt="">
+                              <div class="team-overlay">
+                                   <ul class="social-icon">
+                                        <li><a href="https://github.com/DiogoFernandes77" class="fab fa-github"></a></li>
+                                   </ul>
+                              </div>
+                         </div>
+                         <p>Diogo Fernandes</p>
+                         <h3>diogo.fernandes77@ua.pt</h3>
+                    </div>
 
-      <p><b>Asteroid</b>:
+                    <div class="col-md-4 col-sm-4 item">
+                         <div class="team-item">
+                              <img src="images/PedroSilva.jpeg" class="img-responsive" alt="">
+                              <div class="team-overlay">
+                                   <ul class="social-icon">
+                                        <li><a href="https://github.com/pedromsilva99" class="fab fa-github"></a></li>
+                                   </ul>
+                              </div>
+                         </div>
+                         <p>Pedro Silva</p>
+                         <h3>pedromsilva99@ua.pt</h3>
+                    </div>
 
-        <button class="btn btn-dark" id="asteroid">ON</button>
+                    <div class="col-md-4 col-sm-4 item">
+                         <div class="team-item">
+                              <img src="images/RuiOliveira.jpeg" class="img-responsive" alt="">
+                              <div class="team-overlay">
+                                   <ul class="social-icon">
+                                        <li><a href="https://github.com/ruimigueloliveira" class="fab fa-github"></a></li>
+                                   </ul>
+                              </div>
+                         </div>
+                         <p>Rui Oliveira</p>
+                         <h3>ruimigueloliveira@ua.pt</h3>
+                    </div>
 
-      </p>
+                    <div class="col-md-4 col-sm-4 item">
+                         <div class="team-item">
+                              <img src="images/TiagoAdonis.jpeg" class="img-responsive" alt="">
+                              <div class="team-overlay">
+                                   <ul class="social-icon">
+                                        <li><a href="https://github.com/tiagoadonis" class="fab fa-github"></a></li>
+                                   </ul>
+                              </div>
+                         </div>
+                         <p>Tiago Adónis</p>
+                         <h3>tiago.adonis@ua.pt</h3>
+                    </div>
 
-			<p><b>Projection type</b>:
+                    <div class="col-md-4 col-sm-4 item">
+                         <div class="team-item">
+                              <img src="images/TiagoBarros.png" class="img-responsive" alt="">
+                              <div class="team-overlay">
+                                   <ul class="social-icon">
+                                        <li><a href="https://github.com/tiagobarros99" class="fab fa-github"></a></li>
+                                   </ul>
+                              </div>
+                         </div>
+                         <p>Tiago Barros</p>
+                         <h3>tiagobarros99@ua.pt</h3>
+                    </div>
 
-	        <select class="btn btn-secondary dropdown-toggle" id="projection-selection">
-    				<option value="0">Perspective Projection</option>
-    				<option value="1">Orthogonal Projection</option>
-	        </select>
+                    <div class="col-md-4 col-sm-4 item">
+                         <div class="team-item">
+                              <img src="images/JoseVieira.jpeg" class="img-responsive" alt="">
+                              <div class="team-overlay">
+                                   <ul class="social-icon">
+                                        <li><a href="https://pt.linkedin.com/in/josé-vieira-2793aa32" class="fab fa-linkedin"></a></li>
+                                   </ul>
+                              </div>
+                         </div>
+                         <p>José Vieira</p>
+                         <h3>Coordinator</h3>
+                    </div>
+               </div>
 
-      </p>
+          </div>
+     </div>
+</section>
 
-        <p><b>Rendering mode</b>:
+<!-- FOOTER -->
+<footer>
+     <div class="container footer">
+          <div class="row-center">
+               <img src="images/detiLogo.png"> 
+          </div>
+          <div class="row-center">
+               <hr class="solidOne">
+               <p>Projeto em Engenharia Informárica 2021 - Grupo 05 - MIECT</p> 
+          </div>
+     </div>
+</footer>
 
-          <select class="btn btn-secondary dropdown-toggle" id="rendering-mode-selection">
-    				<option value="0">Filled Triangles</option>
-    				<option value="1">Wireframe</option>
-    				<option value="2">Vertices</option>
-          </select>
-
-        </p>
-
-        <p id="fps"> fps: </p>
-		</div>
-	</div>
+<!-- SCRIPTS -->
+<script src="js/jquery.js"></script>
+<script src="js/bootstrap.min.js"></script>
+<script src="js/jquery.parallax.js"></script>
+<script src="js/owl.carousel.min.js"></script>
+<script src="js/jquery.magnific-popup.min.js"></script>
+<script src="js/magnific-popup-options.js"></script>
+<script src="js/modernizr.custom.js"></script>
+<script src="js/smoothscroll.js"></script>
+<script src="js/custom.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+<script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/waypoints/4.0.1/jquery.waypoints.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Counter-Up/1.0.0/jquery.counterup.min.js"></script>
+<script> 
+     AOS.init({
+          duration: 1000
+     }); 
+</script>
+<script>
+     $(document).ready(function(){
+          $(".counter").counterUp({
+               delay: 10,
+               time: 700
+          });
+     });
+</script>
 </body>
 </html>
