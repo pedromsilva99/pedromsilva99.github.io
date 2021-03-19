@@ -364,8 +364,7 @@ a:hover, a:active, a:focus {
   float: left;
 }
 
-#about,
-#team, #facts {
+#about, #team, #facts {
   padding-top: 100px;
   padding-bottom: 100px;
   text-align: center;
@@ -558,7 +557,7 @@ a:hover, a:active, a:focus {
 -----------------------------------------*/
 
 #about {
-  padding-top: 150px;
+  padding-top: 100px;
   padding-bottom: 150px;
 }
 
@@ -653,6 +652,9 @@ a:hover, a:active, a:focus {
   flex-direction: column;
 }
 
+.box2 .icon {
+  color: #ffffff;
+}
 
 .box .icon, .box .counter, .box .text{
   color: #ffffff
