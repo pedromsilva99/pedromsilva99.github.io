@@ -360,6 +360,10 @@ a:hover, a:active, a:focus {
   margin-top: 50px;
 }
 
+#imageright img {
+  float: left;
+}
+
 #about,
 #team, #facts {
   padding-top: 100px;
@@ -639,7 +643,7 @@ a:hover, a:active, a:focus {
 }
 
 .box2 {
-  background: lightblue;
+  background: #58c5dd;
   border-radius: 50%;
   width: 100px;
   height: 100px;
@@ -652,6 +656,10 @@ a:hover, a:active, a:focus {
 
 .box .icon, .box .counter, .box .text{
   color: #ffffff
+}
+
+.title{
+  font-size: 30px;
 }
 
 .section-title .facts {
@@ -809,7 +817,7 @@ hr.solidOne {
   }
 
   #about {
-    padding-top: 120px;
+    padding-top: 80px;
     padding-bottom: 100px;
   }
 
