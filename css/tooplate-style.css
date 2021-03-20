@@ -348,7 +348,7 @@ a:hover, a:active, a:focus {
 }
 
 #about, #project,
-#team, #table, footer {
+#team, #table, #gantt, footer {
   background: #ffffff;
 }
 
@@ -771,6 +771,22 @@ a:hover, a:active, a:focus {
 
 .content-table tbody tr:last-of-type {
   border-bottom: 2px solid #49b1c9;
+}
+
+/*---------------------------------------
+  GANTT
+-----------------------------------------*/
+
+.gantt {
+  padding-bottom: 100px;
+}
+
+.gantt h4 {
+  padding-bottom: 50px;
+}
+
+.gantt iframe {
+  box-shadow: 0 0 30px rgba(0, 0, 0, 0.15);
 }
 
 /*---------------------------------------
