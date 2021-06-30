@@ -83,7 +83,15 @@
             área. Será possível também calcular a velocidade média de cada avião, bem como a distância percorrida. É possível  visualizar diversas estatísticas de aviões como por 
             exemplo, a sua altitude de voo e as suas coordenadas num determinado intervalo de altitude através de uma tabela disponível numa tabela.
           </p>
-      
+          <br>
+          </br>
+          <a href="https://www.youtube.com/watch?v=x8O5AUeyMFY&ab_channel=PedroSilva">Video de Demonstração da aplicação</a>
+          <br>
+          </br>
+          <a href="https://www.youtube.com/watch?v=enQDENTesHs&ab_channel=PedroSilva">Demonstração do Logstash</a>
+          <br>
+          </br>
+          <a href="https://github.com/DiogoFernandes77/ESP22">Link github onde se pode enccontrar o projeto desenvolvido</a>
         </div>
       </div>
     </section><!-- End Facts Section -->
@@ -304,13 +312,6 @@
         <div class="section-title">
           <h2>Architecture</h2>
           <img src="assets/img/diagrama.png" alt="" class="img-fluid">
-        </div>
-          <p>
-            -- Concepção dos blocos e sua implementation
-            -- Processo de Messaging
-          </p>
-        </div>
-
       </div>
 
     </section><!-- End Testimonials Section -->
@@ -325,28 +326,16 @@
               <p><em>Como correr em localhost:</em></p>
               <ul>
                 <li>mvn clean install - Para gerar o ficheiro .jar com a aplicação</li>
-                <li>docker compose up - Faz build e correr os containers no docker</li>
-                <li>Ir ao browser e correr localhost:8882</li>
-              </ul>
-              <p><em>Como correr o Kafka Producers:</em></p>
-              <ul>
-                <li></li>
-                <li></li>
-              </ul>
-              <p><em>Como correr o SpringBoot</em></p>
-              <ul>
-                <li></li>
-                <li></li>
+                <li>docker-compose up - Faz build e correr os containers no docker</li>
+                <li>Ir ao browser e correr localhost:8082</li>
               </ul>
               <p><em>Como correr o projeto em RuntimeVM</em></p>
               <ul>
-                <li></li>
-                <li></li>
-              </ul>
-              <p><em>Como correr o projeto em RuntimeVM</em></p>
-              <ul>
-                <li></li>
-                <li></li>
+                <li>Estar na VPN da Universidade de Aveiro</li>
+                <li>Username: ssh esp22@192.168.160.87</li>
+                <li>Password: findtheplane</li>
+                <li>Correr: docker-compose up</li>
+                <li>Web Browser: http://192.168.160.87:22500</li>
               </ul>
             </div>
 
@@ -367,12 +356,12 @@
 
             <h3 class="resume-title">Credênciais</h3>
             <div class="resume-item pb-0">
-              <p><em>Credênciasis runtime VM:</em></p>
+              <p><em>Credênciais runtime VM:</em></p>
               <ul>
                 <li>Username: esp22@192.168.160.18</li>
                 <li>Password: findtheplane </li>
               </ul>
-              <p><em>Credênciasis MySQL:</em></p>
+              <p><em>Credênciais MySQL:</em></p>
               <ul>
                 <li>Username: esp22_db</li>
                 <li>Password: findtheplane</li>
@@ -384,27 +373,27 @@
               <p><em>Docker Containers in Runtime: 192.168.160.18</em></p>
               <p><em>Portainer</em></p>
               <ul>
-                <li>Port: 9000 </li>
+                <li>Porta: 9000 </li>
               </ul>
               <p><em>elk-elasticsearch</em></p>
               <ul>
-                <li>Port: 9200 </li>
+                <li>Porta: 9200 </li>
               </ul>
               <p><em>elk-kibana</em></p>
               <ul>
-                <li>Port: 5601 </li>
+                <li>Porta: 5601 </li>
               </ul>
               <p><em>MySQL</em></p>
               <ul>
-                <li>Port: 2181:9092 </li>
+                <li>Porta: 2181:9092 </li>
               </ul>
               <p><em>zookeeper</em></p>
               <ul>
-                <li>Port: 2181</li>
+                <li>Porta: 2181</li>
               </ul>
               <p><em>Kafka</em></p>
               <ul>
-                <li>Port: 3306</li>
+                <li>Porta: 3306</li>
               </ul>
               <p><em>Docker Registry: 192.168.160.48:5000</em></p>
               <p><em>Docker Images</em></p>
@@ -417,7 +406,7 @@
           </div>
         </div>
       </div>
-    </section><!-- End Contact Section 192.168.160.48:5000--> 
+    </section><!-- End Contact Section--> 
 
      <!-- ======= Contact Section ======= -->
      <section id="manual" class="manual">
@@ -426,6 +415,26 @@
         <div class="section-title">
           <h2>Manual</h2>
           <p>
+            Para iniciar a utilização da nossa aplicação terá de realizar os procedimentos anteriormente descritos. Após aceder ao link
+            "http://192.168.160.87:22500" irá encontra algo idêntico à imagem que se segue onde se pode escolher uma das duas opções disponiveis,
+            visualizar os aviões num mapa ou verificar a informação dos mesmos através de uma tabela.
+            <br></br>
+            <img class="Avatar" src="assets/img/screen1.png" alt="Avatar" style="width:600px" height="300" width="200">
+            <br></br>
+            Se optar por escolher a opção de visualizar a informação dos aviões, pode se optar pelos dois tipos existentes, baixa ou elevada
+            altitude.
+            <br></br>
+            <img class="Avatar" src="assets/img/low.png" alt="Avatar" style="width:600px" height="300" width="200">
+            <br></br>
+            Ambos apresentam as caracteristicas de cada avião. Apesar de um só mostrar aviões até 500 metros (Low flights) e outro com mais 
+            de 5000 metros de altitude (High flights). É possível também verificar todos os voos numa uníca tabela.
+            <br></br>
+            <img class="Avatar" src="assets/img/high.png" alt="Avatar" style="width:600px" height="300" width="200">
+            <br></br>
+            Por último, é possível visualizar todos os aviões que se encontram na região da Irlanda e do Reino Unido através de um mapa
+            escolhendo a opção "Map".
+            <br></br>
+            <img class="Avatar" src="assets/img/mapa.png" alt="Avatar" style="width:600px" height="300" width="200">
           </p>
         </div>
       </div>
@@ -433,7 +442,7 @@
 
 
      <!-- ======= Contact Section ======= -->
-     <section id="teamm" class="team">
+     <section id="team" class="team">
       <div class="container">
 
         <div class="section-title">
